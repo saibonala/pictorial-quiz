@@ -21,7 +21,9 @@
     padding-top: calc(1rem + env(safe-area-inset-top, 0px));
     background: var(--bg); color: var(--text);
   }
-  h1 { font-size: 1.3rem; margin: 0 0 1rem; display: flex; align-items: center; gap: .4rem; }
+  h1 { font-size: 1.3rem; margin: 0 0 1rem; display: flex; align-items: center; gap: .5rem; }
+  h1 img { height: 2rem; width: auto; border-radius: 6px; }
+  .bigLogo { display: block; max-width: 100%; height: auto; margin: .5rem auto 1rem; }
   h2 { font-size: 1rem; margin: 0 0 .75rem; }
   .screen { display: none; }
   .screen.active { display: block; }
@@ -66,7 +68,7 @@
   .thumb button.pick { position: absolute; inset: 0; width: 100%; height: 100%; border: none; padding: 0; background: none; cursor: pointer; }
 
   .numTile { display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--accent) 10%, var(--card)); }
-  .numTile .num { font-size: 1.6rem; font-weight: 700; color: var(--accent); pointer-events: none; }
+  .numTile .num { font-size: 2rem; font-weight: 700; color: var(--accent); pointer-events: none; }
 
   .back { background: none; border: none; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; padding: .4rem 0; margin-bottom: .3rem; }
 
@@ -91,7 +93,7 @@
 </head>
 <body>
 
-<h1>🖼️ MWS Pictorial Quiz</h1>
+<h1><img src="logo.png" alt="MWS logo">MWS Pictorial Quiz</h1>
 
 <main>
   <section id="upload-screen" class="screen active">
@@ -108,7 +110,10 @@
     </div>
 
     <div class="card" id="listCard" hidden>
-      <h2>Your images (<span id="imgCount">0</span>)</h2>
+      <div style="display:flex; justify-content:space-between; align-items:center">
+        <h2>Your images (<span id="imgCount">0</span>)</h2>
+        <button id="clearAllBtn" class="btn" style="min-height:36px; padding:.4rem .8rem">Clear all</button>
+      </div>
       <ul id="imgList" class="thumb-grid"></ul>
     </div>
 
@@ -117,12 +122,16 @@
 
   <section id="picker-screen" class="screen">
     <button class="back" data-go="upload-screen">← Manage images</button>
+    <img class="bigLogo" src="logo.png" alt="MWS logo">
     <h2>Choose an image</h2>
     <div id="numberGrid" class="thumb-grid"></div>
   </section>
 
   <section id="quiz-screen" class="screen">
-    <button class="back" data-go="picker-screen">← Choose another</button>
+    <div style="display:flex; justify-content:space-between; align-items:center">
+      <button class="back" data-go="picker-screen">← Choose another</button>
+      <button id="fullscreenBtn" class="btn">⛶ Fullscreen</button>
+    </div>
     <div class="quizCard">
       <div id="stageDots" class="dots"></div>
       <div class="canvasWrap">
@@ -137,7 +146,7 @@
 
 <script>
 const STORAGE_KEY = 'pictorialQuizImages';
-const STAGES = [48, 64, 80, null]; // blocks across canvas width; null = full reveal
+const STAGES = [24, 32, 48, null]; // blocks across canvas width; null = full reveal
 const CANVAS_MAX_W = 640;
 
 let images = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
@@ -209,6 +218,21 @@ document.getElementById('addUrlsBtn').addEventListener('click', () => {
 document.getElementById('startQuizBtn').addEventListener('click', () => {
   renderPicker();
   showScreen('picker-screen');
+});
+
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if (images.length && confirm('Remove all images?')) {
+    images = [];
+    save(); renderList();
+  }
+});
+
+document.getElementById('fullscreenBtn').addEventListener('click', () => {
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
 });
 
 function renderPicker() {
